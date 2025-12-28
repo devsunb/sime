@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    <key>InputMethodConnectionName</key>
+    <string>Sime</string>
+    <key>InputMethodServerControllerClass</key>
+    <string>SimeInputController</string>
+    <key>TISIconIsTemplate</key>
+    <true />
+    <key>tsInputMethodCharacterRepertoireKey</key>
+    <array>
+      <string>Hang</string>
+    </array>
+    <key>tsInputMethodIconFileKey</key>
+    <string>icon.tiff</string>
+  </dict>
+</plist>
