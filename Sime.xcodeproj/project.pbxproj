@@ -10,9 +10,6 @@
 		24A000062F011316007DFE06 /* Composition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE00 /* Composition.swift */; };
 		24A000072F011316007DFE07 /* Automata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE0A /* Automata.swift */; };
 		24A000082F011316007DFE08 /* KeyboardFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE0B /* KeyboardFactory.swift */; };
-		24TEST0D2F0113160007DF0D /* Composition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE00 /* Composition.swift */; };
-		24TEST0E2F0113160007DF0E /* Automata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE0A /* Automata.swift */; };
-		24TEST0F2F0113160007DF0F /* KeyboardFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE0B /* KeyboardFactory.swift */; };
 		24A000112F011316007DFE01 /* KeyboardProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000012F011316007DFE01 /* KeyboardProtocol.swift */; };
 		24A000122F011316007DFE02 /* InputTimingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000022F011316007DFE02 /* InputTimingManager.swift */; };
 		24A000132F011316007DFE03 /* DubeolLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000032F011316007DFE03 /* DubeolLayout.swift */; };
@@ -35,6 +32,9 @@
 		24TEST0A2F0113160007DF0A /* KeyboardDubeol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF40CD2F28EFF6CB000CCB7B /* KeyboardDubeol.swift */; };
 		24TEST0B2F0113160007DF0B /* Hangul.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF6561F828D1AE240085AC8D /* Hangul.swift */; };
 		24TEST0C2F0113160007DF0C /* Keyboards.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF6561FC28D1AE590085AC8D /* Keyboards.swift */; };
+		24TEST0D2F0113160007DF0D /* Composition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE00 /* Composition.swift */; };
+		24TEST0E2F0113160007DF0E /* Automata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE0A /* Automata.swift */; };
+		24TEST0F2F0113160007DF0F /* KeyboardFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24A000002F011316007DFE0B /* KeyboardFactory.swift */; };
 		CF3237BD28D1AACE008941FE /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF3237BC28D1AACE008941FE /* Log.swift */; };
 		CF34BD8B29D6C0A200F69E9E /* OptHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF34BD8A29D6C0A200F69E9E /* OptHandler.swift */; };
 		CF39BCA228C42D7200CB35AE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF39BCA128C42D7200CB35AE /* AppDelegate.swift */; };
@@ -483,21 +483,15 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 370;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sime/Info.plist;
-				INFOPLIST_KEY_LSBackgroundOnly = YES;
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.sunb.inputmethod.sime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -516,21 +510,15 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 370;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Sime/Info.plist;
-				INFOPLIST_KEY_LSBackgroundOnly = YES;
-				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 7.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.sunb.inputmethod.sime;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
