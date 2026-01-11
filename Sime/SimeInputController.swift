@@ -124,6 +124,12 @@ open class SimeInputController: IMKInputController {
             let eaten = handleKeyDown(event, sender)
             if !eaten { commitComposition(sender) }
             return eaten
+        case .flagsChanged:
+            let flags = event.modifierFlags
+            if flags.contains(.command) || flags.contains(.option) || flags.contains(.control) {
+                commitComposition(sender)
+            }
+            return false
         case .leftMouseDown, .leftMouseUp, .leftMouseDragged,
              .rightMouseDown, .rightMouseUp, .rightMouseDragged:
             commitComposition(sender)
