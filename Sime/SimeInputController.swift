@@ -75,14 +75,12 @@ open class SimeInputController: IMKInputController {
         keyUpMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyUp) { [weak self] event in
             self?.handleKeyUp(event)
         }
-        Log.shared.debug("[Input] keyUp 모니터 설정됨")
     }
 
     private func removeKeyUpMonitor() {
         guard let monitor = keyUpMonitor else { return }
         NSEvent.removeMonitor(monitor)
         keyUpMonitor = nil
-        Log.shared.debug("[Input] keyUp 모니터 해제됨")
     }
 
     // MARK: - Notification Handlers
@@ -106,7 +104,7 @@ open class SimeInputController: IMKInputController {
     // MARK: - IMKInputController Overrides
 
     override open func activateServer(_ sender: Any!) {
-        Log.shared.info("[Input] activateServer")
+        Log.shared.debug("[Input] activateServer")
         super.activateServer(sender)
         hangul = Hangul()
         hangul.start(OptHandler.shared.keyboardTag)
@@ -117,7 +115,7 @@ open class SimeInputController: IMKInputController {
         hangul.flush()
         updateDisplay(sender)
         hangul.stop()
-        Log.shared.info("[Input] deactivateServer")
+        Log.shared.debug("[Input] deactivateServer")
     }
 
     override open func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
@@ -224,12 +222,10 @@ open class SimeInputController: IMKInputController {
     private func handleKeyUp(_ event: NSEvent) {
         let keyCode = event.keyCode
         guard let keyDownEvent = getKeyDownEvent(keyCode) else {
-            Log.shared.debug("[Input] keyUp ignored: no matching keyDown for keyCode=\(keyCode)")
             return
         }
         let flags = keyDownEvent.event.modifierFlags
         guard let client = self.client() else {
-            Log.shared.debug("[Input] keyUp ignored: client unavailable")
             return
         }
 
@@ -247,7 +243,6 @@ open class SimeInputController: IMKInputController {
         keyDownEvents.remove(at: keyDownEvent.index)
 
         guard let ascii = toAscii(keyCode, flags) else {
-            Log.shared.debug("[Input] keyUp ignored: toAscii failed for keyCode=\(keyCode)")
             return
         }
         process(client, ascii)
