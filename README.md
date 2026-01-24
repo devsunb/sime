@@ -94,7 +94,7 @@ README를 읽다가 참고한 프로젝트로 나빌 입력기 for 맥이 링크
 그래서 기존과 같이 keyDown 시 입력을 처리하는 구조에서 약어 매칭을 진행하는 입력 대기열을 만들어서 약어를 구현했었다.
 그리고 나니 keyDown 시 입력을 처리하면 약어 시퀀스를 포함하는 글자를 입력하는 게 어렵다는 것을 깨달았다.
 
-예를 들어 `jw` 또는 `wj`를 입력하면 `입니다. `로 확장되어야 하는데, `jdw`를 입력하면 `입`이라는 글자가 입력되어야 한다.
+예를 들어 `jw` 또는 `wj`를 입력하면 `입니다.`로 확장되어야 하는데, `jdw`를 입력하면 `입`이라는 글자가 입력되어야 한다.
 근데 모아치기가 가능하니 `입`을 입력할 때는 `jdw`가 아니라 `jwd`나 `dwj`와 같이 입력해도 된다.
 이때 `jwd`는 `입`이 아니라 `입니다.ㅣ`가 되어 버리고, `dwj`는 `ㅇ입니다.`가 되어 버리는 문제가 발생한다.
 
@@ -129,14 +129,35 @@ defaults write dev.sunb.inputmethod.sime processOnKeyUp -int 0
 defaults write dev.sunb.inputmethod.sime processOnKeyUp -int 1
 ```
 
+### 모아치기 입력 간격 임계치
+
+모아치기 종성 넘김 및 동일 초/중/종성 연속 입력 시 글자 분리 기준 시간 (밀리초)
+- 종성이 있는 글자에서 다음 글자로 넘어가는 시점에 (fallbackProc 호출 시)
+- 입력 간격이 임계치 이내면 종성을 다음 글자로 넘김
+
+예시 ("서울" 입력):
+1. "서" 입력 완료
+2. "울"을 모아치기로 빠르게 입력 → "ㄹ"이 먼저 들어가면 "설"이 됨
+3. "ㅇ" 또는 "ㅜ" 입력 시 fallback 발생
+4. 입력 간격이 150ms 이내면 → "ㄹ"을 종성에서 제거 → "서" + "울"
+
+```bash
+# 기본값: 150ms
+defaults write dev.sunb.inputmethod.sime inputDeltaThreshold -int 150
+```
+
 ### 두벌식 연타로 쌍자음
+
+0이면 비활성화 (Shift 사용), 양수면 활성화 + 연타 인식 임계치 (밀리초)
+
+자음이 설정된 시간 내에 연속 입력 시 쌍자음으로 합쳐짐
 
 ```bash
 # Shift 사용 (기본값)
 defaults write dev.sunb.inputmethod.sime dubeolDouble -int 0
 
-# 연타 (ㄷㄷ → ㄸ)
-defaults write dev.sunb.inputmethod.sime dubeolDouble -int 1
+# 연타 활성화 (200ms 임계치)
+defaults write dev.sunb.inputmethod.sime dubeolDouble -int 200
 ```
 
 ### 디버그 로그

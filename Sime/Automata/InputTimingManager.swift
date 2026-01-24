@@ -33,14 +33,14 @@ final class InputTimingManager {
     private var categoryDeltas: [TimingCategory: TimeInterval]
     private(set) var inputTimes: [TimeInterval] = []
 
-    let inputDeltaThreshold: TimeInterval
-    let doubleKeyThreshold: TimeInterval
+    var inputDeltaThreshold: TimeInterval
+    var doubleKeyThreshold: TimeInterval
 
     // MARK: - Initialization
 
     init(
-        inputDeltaThreshold: TimeInterval = 150,
-        doubleKeyThreshold: TimeInterval = 150,
+        inputDeltaThreshold: TimeInterval,
+        doubleKeyThreshold: TimeInterval,
         timeProvider: TimeProvider = SystemTimeProvider()
     ) {
         self.inputDeltaThreshold = inputDeltaThreshold

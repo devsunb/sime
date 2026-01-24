@@ -9,7 +9,31 @@ class Keyboard: KeyboardType {
     var jongsungLayout: [String: Jongsung] = [:]
     var etcLayout: [String: String] = [:]
     var abbreviations: [String: String] = [:]
-    let timingManager = InputTimingManager()
+    let timingManager: InputTimingManager
+
+    init() {
+        let opts = OptHandler.shared
+        let doubleKeyThreshold = opts.dubeolDouble > 0 ? opts.dubeolDouble : 150
+        timingManager = InputTimingManager(
+            inputDeltaThreshold: TimeInterval(opts.inputDeltaThreshold),
+            doubleKeyThreshold: TimeInterval(doubleKeyThreshold)
+        )
+        setupNotifications()
+    }
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleInputDeltaThresholdChange(_:)),
+            name: .inputDeltaThresholdDidChange,
+            object: nil
+        )
+    }
+
+    @objc private func handleInputDeltaThresholdChange(_ notification: Notification) {
+        guard let value = notification.userInfo?["value"] as? Int else { return }
+        timingManager.inputDeltaThreshold = TimeInterval(value)
+    }
 
     func chosungProc(comp: inout Composition, nobreak: Bool, current: [String], i: Int) -> Bool {
         guard i < current.count else {

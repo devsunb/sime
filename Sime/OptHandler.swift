@@ -5,6 +5,8 @@ import Cocoa
 extension Notification.Name {
     static let keyboardDidChange = Notification.Name("KeyboardDidChangeNotification")
     static let processOnKeyUpDidChange = Notification.Name("ProcessOnKeyUpDidChangeNotification")
+    static let inputDeltaThresholdDidChange = Notification.Name("InputDeltaThresholdDidChangeNotification")
+    static let dubeolDoubleDidChange = Notification.Name("DubeolDoubleDidChangeNotification")
 }
 
 // MARK: - OptHandler
@@ -20,6 +22,7 @@ final class OptHandler: NSObject {
         static let keyboard = "keyboard"
         static let processOnKeyUp = "processOnKeyUp"
         static let dubeolDouble = "dubeolDouble"
+        static let inputDeltaThreshold = "inputDeltaThreshold"
     }
 
     // MARK: - Properties
@@ -29,6 +32,7 @@ final class OptHandler: NSObject {
     @objc dynamic var keyboardTag = 0
     @objc dynamic var processOnKeyUp = 0
     @objc dynamic var dubeolDouble = 0
+    @objc dynamic var inputDeltaThreshold = 150
 
     // MARK: - Initialization
 
@@ -45,6 +49,7 @@ final class OptHandler: NSObject {
         defaults.removeObserver(self, forKeyPath: Keys.keyboard)
         defaults.removeObserver(self, forKeyPath: Keys.processOnKeyUp)
         defaults.removeObserver(self, forKeyPath: Keys.dubeolDouble)
+        defaults.removeObserver(self, forKeyPath: Keys.inputDeltaThreshold)
     }
 
     // MARK: - Setup
@@ -53,7 +58,8 @@ final class OptHandler: NSObject {
         defaults.register(defaults: [
             Keys.keyboard: 0,
             Keys.processOnKeyUp: 0,
-            Keys.dubeolDouble: 0
+            Keys.dubeolDouble: 0,
+            Keys.inputDeltaThreshold: 150
         ])
     }
 
@@ -61,12 +67,14 @@ final class OptHandler: NSObject {
         keyboardTag = defaults.integer(forKey: Keys.keyboard)
         processOnKeyUp = defaults.integer(forKey: Keys.processOnKeyUp)
         dubeolDouble = defaults.integer(forKey: Keys.dubeolDouble)
+        inputDeltaThreshold = defaults.integer(forKey: Keys.inputDeltaThreshold)
     }
 
     private func setupKVO() {
         defaults.addObserver(self, forKeyPath: Keys.keyboard, options: [.new], context: nil)
         defaults.addObserver(self, forKeyPath: Keys.processOnKeyUp, options: [.new], context: nil)
         defaults.addObserver(self, forKeyPath: Keys.dubeolDouble, options: [.new], context: nil)
+        defaults.addObserver(self, forKeyPath: Keys.inputDeltaThreshold, options: [.new], context: nil)
     }
 
     // MARK: - KVO
@@ -86,6 +94,8 @@ final class OptHandler: NSObject {
             handleProcessOnKeyUpChange(newValue)
         case Keys.dubeolDouble:
             handleDubeolDoubleChange(newValue)
+        case Keys.inputDeltaThreshold:
+            handleInputDeltaThresholdChange(newValue)
         default:
             break
         }
@@ -119,6 +129,21 @@ final class OptHandler: NSObject {
         guard dubeolDouble != newValue else { return }
         dubeolDouble = newValue
         Log.shared.info("[Config] dubeolDouble=\(newValue)")
-        KeyboardFactory.getDubeolKeyboard()?.setDoubleConsonant(newValue == 1)
+        NotificationCenter.default.post(
+            name: .dubeolDoubleDidChange,
+            object: nil,
+            userInfo: ["value": newValue]
+        )
+    }
+
+    private func handleInputDeltaThresholdChange(_ newValue: Int) {
+        guard inputDeltaThreshold != newValue else { return }
+        inputDeltaThreshold = newValue
+        Log.shared.info("[Config] inputDeltaThreshold=\(newValue)")
+        NotificationCenter.default.post(
+            name: .inputDeltaThresholdDidChange,
+            object: nil,
+            userInfo: ["value": newValue]
+        )
     }
 }

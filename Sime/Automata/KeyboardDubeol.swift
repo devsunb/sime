@@ -8,10 +8,28 @@ final class KeyboardDubeol: Keyboard {
     override init() {
         super.init()
         name = "두벌식"
-        doubleConsonant = OptHandler.shared.dubeolDouble == 1
+        doubleConsonant = OptHandler.shared.dubeolDouble > 0
         chosungLayout = doubleConsonant ? DubeolLayout.noShiftChosungLayout : DubeolLayout.shiftChosungLayout
         jungsungLayout = DubeolLayout.jungsungLayout
         jongsungLayout = DubeolLayout.jongsungLayout
+        setupDubeolNotifications()
+    }
+
+    private func setupDubeolNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleDubeolDoubleChange(_:)),
+            name: .dubeolDoubleDidChange,
+            object: nil
+        )
+    }
+
+    @objc private func handleDubeolDoubleChange(_ notification: Notification) {
+        guard let value = notification.userInfo?["value"] as? Int else { return }
+        setDoubleConsonant(value > 0)
+        if value > 0 {
+            timingManager.doubleKeyThreshold = TimeInterval(value)
+        }
     }
 
     func setDoubleConsonant(_ enabled: Bool) {
