@@ -4,8 +4,38 @@ import InputMethodKit
 
 private enum KeyCode {
     static let enter: UInt16 = 0x24
+    static let keypadEnter: UInt16 = 0x4C
     static let tab: UInt16 = 0x30
     static let backspace: UInt16 = 0x33
+    static let forwardDelete: UInt16 = 0x75
+    static let escape: UInt16 = 0x35
+    static let home: UInt16 = 0x73
+    static let end: UInt16 = 0x77
+    static let pageUp: UInt16 = 0x74
+    static let pageDown: UInt16 = 0x79
+    static let leftArrow: UInt16 = 0x7B
+    static let rightArrow: UInt16 = 0x7C
+    static let downArrow: UInt16 = 0x7D
+    static let upArrow: UInt16 = 0x7E
+    static let f1: UInt16 = 0x7A
+    static let f2: UInt16 = 0x78
+    static let f3: UInt16 = 0x63
+    static let f4: UInt16 = 0x76
+    static let f5: UInt16 = 0x60
+    static let f6: UInt16 = 0x61
+    static let f7: UInt16 = 0x62
+    static let f8: UInt16 = 0x64
+    static let f9: UInt16 = 0x65
+    static let f10: UInt16 = 0x6D
+    static let f11: UInt16 = 0x67
+    static let f12: UInt16 = 0x6F
+
+    static let compositionKeys: Set<UInt16> = [
+        escape, forwardDelete,
+        leftArrow, rightArrow, downArrow, upArrow,
+        home, end, pageUp, pageDown,
+        f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12
+    ]
 }
 
 // MARK: - SimeInputController
@@ -26,6 +56,8 @@ open class SimeInputController: IMKInputController {
     private var prevKeyUpTime: TimeInterval = Date().timeIntervalSince1970
     private var keyUpDelta: TimeInterval = 0
     private var keyUpMonitor: Any?
+    private var eventTap: CFMachPort?
+    private var runLoopSource: CFRunLoopSource?
 
     // MARK: - Initialization
 
@@ -33,10 +65,12 @@ open class SimeInputController: IMKInputController {
         super.init(server: server, delegate: delegate, client: inputClient)
         setupNotificationObservers()
         setupKeyUpMonitorIfNeeded()
+        setupEventTap()
     }
 
     deinit {
         removeKeyUpMonitor()
+        removeEventTap()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -83,6 +117,73 @@ open class SimeInputController: IMKInputController {
         keyUpMonitor = nil
     }
 
+    private func setupEventTap() {
+        guard eventTap == nil else { return }
+
+        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
+        guard AXIsProcessTrustedWithOptions(options) else {
+            Log.shared.error("[Input] CGEventTap 권한 없음")
+            return
+        }
+
+        let eventMask: CGEventMask = (1 << CGEventType.keyDown.rawValue)
+
+        // Note: CGEventTap callback에서 self를 참조하기 위해 pointer 사용
+        let refcon = Unmanaged.passUnretained(self).toOpaque()
+
+        guard let tap = CGEvent.tapCreate(
+            tap: .cgSessionEventTap,
+            place: .headInsertEventTap,
+            options: .listenOnly,
+            eventsOfInterest: eventMask,
+            callback: { _, _, event, refcon -> Unmanaged<CGEvent>? in
+                guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
+                let controller = Unmanaged<SimeInputController>.fromOpaque(refcon).takeUnretainedValue()
+                controller.handleEventTapKeyDown(event)
+                return Unmanaged.passUnretained(event)
+            },
+            userInfo: refcon
+        ) else {
+            Log.shared.error("[Input] CGEventTap 생성 실패")
+            return
+        }
+
+        eventTap = tap
+        runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+
+        if let source = runLoopSource {
+            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+            CGEvent.tapEnable(tap: tap, enable: true)
+        }
+    }
+
+    private func removeEventTap() {
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+        }
+        if let source = runLoopSource {
+            CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, .commonModes)
+        }
+        eventTap = nil
+        runLoopSource = nil
+    }
+
+    private func handleEventTapKeyDown(_ event: CGEvent) {
+        let keyCode = UInt16(event.getIntegerValueField(.keyboardEventKeycode))
+        let flags = event.flags
+
+        // Escape, 방향키, Home/End, Page Up/Down, Function 키: modifier 무관하게 항상 Composition
+        if KeyCode.compositionKeys.contains(keyCode) {
+            commitComposition(client())
+            return
+        }
+
+        // Cmd/Ctrl/Opt 조합: 모든 키에 대해 Composition
+        if flags.contains(.maskCommand) || flags.contains(.maskAlternate) || flags.contains(.maskControl) {
+            commitComposition(client())
+        }
+    }
+
     // MARK: - Notification Handlers
 
     @objc private func keyboardDidChange(_ notification: Notification) {
@@ -124,12 +225,6 @@ open class SimeInputController: IMKInputController {
             let eaten = handleKeyDown(event, sender)
             if !eaten { commitComposition(sender) }
             return eaten
-        case .flagsChanged:
-            let flags = event.modifierFlags
-            if flags.contains(.command) || flags.contains(.option) || flags.contains(.control) {
-                commitComposition(sender)
-            }
-            return false
         case .leftMouseDown, .leftMouseUp, .leftMouseDragged,
              .rightMouseDown, .rightMouseUp, .rightMouseDragged:
             commitComposition(sender)
@@ -146,7 +241,7 @@ open class SimeInputController: IMKInputController {
 
     override open func recognizedEvents(_ sender: Any!) -> Int {
         Int(NSEvent.EventTypeMask(arrayLiteral:
-            .keyDown, .flagsChanged,
+            .keyDown,
             .leftMouseUp, .rightMouseUp, .leftMouseDown, .rightMouseDown,
             .leftMouseDragged, .rightMouseDragged,
             .appKitDefined, .applicationDefined, .systemDefined
@@ -175,12 +270,10 @@ open class SimeInputController: IMKInputController {
         if flags.contains(.command) || flags.contains(.option) || flags.contains(.control) {
             Log.shared.debug("[Input] modifier key: \(keyCode)")
             flushKeyDownEvents()
-            hangul.flush()
-            updateDisplay(client)
             return false
         }
 
-        if keyCode == KeyCode.enter || keyCode == KeyCode.tab {
+        if keyCode == KeyCode.enter || keyCode == KeyCode.keypadEnter || keyCode == KeyCode.tab {
             Log.shared.debug("[Input] enter/tab")
             flushKeyDownEvents()
             hangul.flush()

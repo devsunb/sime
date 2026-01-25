@@ -37,9 +37,14 @@ mv ~/Library/Developer/Xcode/DerivedData/Sime-*/Build/Products/Release/Sime.app 
 
 ### 권한
 
-손 뗄 때 입력(약어 사용 시 필요) 기능을 사용하려면 **손쉬운 사용** 권한 필요
-- `processOnKeyUp` 옵션을 활성화하면 손쉬운 사용 권한을 요청함
+**손쉬운 사용** 권한 필요 (앱 시작 시 권한 요청)
 - 시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용에서 Sime 앱 추가
+
+필요한 이유:
+- 특정 키 입력 시 한글 조합을 먼저 완료하기 위해 필요
+  - Escape, 방향키, Home/End, Page Up/Down, F1-F12
+  - Cmd/Ctrl/Opt 조합 키
+- 손 뗄 때 입력(`processOnKeyUp`) 기능에도 필요하지만, 위 기능 때문에 항상 권한이 필요함
 
 ### 세모이 활성화 방법
 
@@ -118,8 +123,6 @@ defaults write dev.sunb.inputmethod.sime keyboard -int 1
 ### 손 뗄 때 입력 처리
 
 세모이 약어 기능 사용하려면 활성화해야 함
-
-활성화한 경우 손쉬운 사용 권한 필요함
 
 ```bash
 # 비활성 (기본값)
