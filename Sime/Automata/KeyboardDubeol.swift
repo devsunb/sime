@@ -104,4 +104,37 @@ final class KeyboardDubeol: Keyboard {
 
         return jongsungLayout[jongKey] != nil
     }
+
+    override func fallbackProc(comp: inout Composition, current: [String], i: Int) {
+        // 겹받침에서 연타 쌍자음 처리
+        // 예: "말끼" 입력 시 종성 ㄺ 상태에서 ㄱ 연타가 빠르면 ㄱ을 빼고 ㄲ으로 시작
+        if doubleConsonant {
+            handleDoubleConsonantOverflow(comp: &comp, current: current, i: i)
+        }
+        super.fallbackProc(comp: &comp, current: current, i: i)
+    }
+
+    // MARK: - Private
+
+    /// 겹받침에서 연타 쌍자음 처리
+    private func handleDoubleConsonantOverflow(comp: inout Composition, current: [String], i: Int) {
+        guard i > 0, i < current.count else { return }
+        guard !comp.jongsung.isEmpty else { return }
+
+        let key = current[i]
+        let prevKey = current[i - 1]
+
+        // 같은 연타 가능 키가 연속으로 입력되었는지 확인
+        guard key == prevKey, DubeolLayout.doubleConsonantKeys.contains(key) else { return }
+
+        // 종성의 마지막 문자가 해당 키인지 확인
+        guard comp.jongsung.hasSuffix(key) else { return }
+
+        // 연타가 빠른지 확인
+        guard timingManager.isDoubleKeyInputFast(at: i) else { return }
+
+        // 종성에서 마지막 키 제거 (ㄺ → ㄹ)
+        comp.jongsung.removeLast()
+        Log.shared.debug("[Automata] 겹받침 연타 쌍자음: '\(key)' 제거 → 종성 '\(comp.jongsung)'")
+    }
 }
