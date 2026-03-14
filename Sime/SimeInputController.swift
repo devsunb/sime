@@ -49,6 +49,12 @@ open class SimeInputController: IMKInputController {
     private let shiftAsciiMap = "ASDFHGZXCV\tBQWERYT!@#$^%+(&_*)}OU{IP\tLJ\"K:|<?NM>\t ~"
     private let keyUpDeltaThreshold: TimeInterval = 150
 
+    // MARK: - Shared Event Tap
+
+    private static var sharedEventTap: CFMachPort?
+    private static var sharedRunLoopSource: CFRunLoopSource?
+    private static weak var activeController: SimeInputController?
+
     // MARK: - Properties
 
     private var hangul = Hangul()
@@ -56,8 +62,6 @@ open class SimeInputController: IMKInputController {
     private var prevKeyUpTime: TimeInterval = Date().timeIntervalSince1970
     private var keyUpDelta: TimeInterval = 0
     private var keyUpMonitor: Any?
-    private var eventTap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
 
     // MARK: - Initialization
 
@@ -65,12 +69,11 @@ open class SimeInputController: IMKInputController {
         super.init(server: server, delegate: delegate, client: inputClient)
         setupNotificationObservers()
         setupKeyUpMonitorIfNeeded()
-        setupEventTap()
+        SimeInputController.setupSharedEventTap(controller: self)
     }
 
     deinit {
         removeKeyUpMonitor()
-        removeEventTap()
         NotificationCenter.default.removeObserver(self)
     }
 
@@ -117,8 +120,9 @@ open class SimeInputController: IMKInputController {
         keyUpMonitor = nil
     }
 
-    private func setupEventTap() {
-        guard eventTap == nil else { return }
+    private static func setupSharedEventTap(controller: SimeInputController) {
+        activeController = controller
+        guard sharedEventTap == nil else { return }
 
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         guard AXIsProcessTrustedWithOptions(options) else {
@@ -128,44 +132,28 @@ open class SimeInputController: IMKInputController {
 
         let eventMask: CGEventMask = (1 << CGEventType.keyDown.rawValue)
 
-        // Note: CGEventTap callback에서 self를 참조하기 위해 pointer 사용
-        let refcon = Unmanaged.passUnretained(self).toOpaque()
-
         guard let tap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
             place: .headInsertEventTap,
             options: .listenOnly,
             eventsOfInterest: eventMask,
-            callback: { _, _, event, refcon -> Unmanaged<CGEvent>? in
-                guard let refcon = refcon else { return Unmanaged.passUnretained(event) }
-                let controller = Unmanaged<SimeInputController>.fromOpaque(refcon).takeUnretainedValue()
-                controller.handleEventTapKeyDown(event)
+            callback: { _, _, event, _ -> Unmanaged<CGEvent>? in
+                SimeInputController.activeController?.handleEventTapKeyDown(event)
                 return Unmanaged.passUnretained(event)
             },
-            userInfo: refcon
+            userInfo: nil
         ) else {
             Log.shared.error("[Input] CGEventTap 생성 실패")
             return
         }
 
-        eventTap = tap
-        runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        sharedEventTap = tap
+        sharedRunLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
 
-        if let source = runLoopSource {
-            CFRunLoopAddSource(CFRunLoopGetCurrent(), source, .commonModes)
+        if let source = sharedRunLoopSource {
+            CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
             CGEvent.tapEnable(tap: tap, enable: true)
         }
-    }
-
-    private func removeEventTap() {
-        if let tap = eventTap {
-            CGEvent.tapEnable(tap: tap, enable: false)
-        }
-        if let source = runLoopSource {
-            CFRunLoopRemoveSource(CFRunLoopGetCurrent(), source, .commonModes)
-        }
-        eventTap = nil
-        runLoopSource = nil
     }
 
     private func handleEventTapKeyDown(_ event: CGEvent) {
@@ -207,6 +195,7 @@ open class SimeInputController: IMKInputController {
     override open func activateServer(_ sender: Any!) {
         Log.shared.debug("[Input] activateServer")
         super.activateServer(sender)
+        SimeInputController.activeController = self
         hangul = Hangul()
         hangul.start(OptHandler.shared.keyboardTag)
     }
