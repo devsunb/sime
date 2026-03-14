@@ -523,4 +523,71 @@ final class KeyboardDubeolTests: XCTestCase {
         let str = String(utf16CodeUnits: normalized, count: normalized.count)
         XCTAssertEqual(str, "있")
     }
+
+    // MARK: - No Jongsung Keys Tests (ㅃ, ㅉ, ㄸ)
+
+    func testShiftQNotInJongsung() {
+        // "가" + Shift+Q → "가" 완성 후 ㅃ 초성 시작 (종성 ㅂ으로 들어가지 않아야 함)
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["r", "k", "Q"])
+
+        XCTAssertTrue(comp.done, "Shift+Q 입력 시 글자 완성되어야 함")
+        XCTAssertEqual(comp.chosung, "r")
+        XCTAssertEqual(comp.jungsung, "k")
+        XCTAssertTrue(comp.jongsung.isEmpty, "ㅃ는 종성으로 들어가면 안 됨")
+    }
+
+    func testShiftWNotInJongsung() {
+        // "가" + Shift+W → "가" 완성 후 ㅉ 초성 시작
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["r", "k", "W"])
+
+        XCTAssertTrue(comp.done)
+        XCTAssertTrue(comp.jongsung.isEmpty, "ㅉ는 종성으로 들어가면 안 됨")
+    }
+
+    func testShiftENotInJongsung() {
+        // "가" + Shift+E → "가" 완성 후 ㄸ 초성 시작
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["r", "k", "E"])
+
+        XCTAssertTrue(comp.done)
+        XCTAssertTrue(comp.jongsung.isEmpty, "ㄸ는 종성으로 들어가면 안 됨")
+    }
+
+    func testShiftQAfterComplexJongsung() {
+        // "닭" + Shift+Q → "닭" 완성 후 ㅃ 초성 시작 (겹받침 유지)
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["e", "k", "f", "r", "Q"])
+
+        XCTAssertTrue(comp.done)
+        XCTAssertEqual(comp.jongsung, "fr", "기존 겹받침 ㄺ 유지")
+    }
+
+    func testLowercaseQStillValidJongsung() {
+        // 소문자 q는 여전히 종성 ㅂ으로 유효
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["r", "k", "q"])
+
+        XCTAssertFalse(comp.done)
+        XCTAssertEqual(comp.jongsung, "q")
+    }
+
+    func testLowercaseWStillValidJongsung() {
+        // 소문자 w는 여전히 종성 ㅈ으로 유효
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["r", "k", "w"])
+
+        XCTAssertFalse(comp.done)
+        XCTAssertEqual(comp.jongsung, "w")
+    }
+
+    func testLowercaseEStillValidJongsung() {
+        // 소문자 e는 여전히 종성 ㄷ으로 유효
+        let automata = Automata(keyboard)
+        let comp = automata.composite(current: ["r", "k", "e"])
+
+        XCTAssertFalse(comp.done)
+        XCTAssertEqual(comp.jongsung, "e")
+    }
 }

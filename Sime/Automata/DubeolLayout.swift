@@ -84,35 +84,39 @@ enum DubeolLayout {
     ]
 
     /// 종성 레이아웃: 연타로 쌍자음 가능
+    /// 참고: Q(ㅃ), W(ㅉ), E(ㄸ)는 종성 불가 → noJongsungKeys로 차단
     static let jongsungLayout: [String: Jongsung] = [
         "r": Jongsung.Kiyeok,
         "R": Jongsung.Ssangkiyeok, "rr": Jongsung.Ssangkiyeok,
         "rt": Jongsung.Kiyeoksios,
         "s": Jongsung.Nieun, "S": Jongsung.Nieun,
-        "sw": Jongsung.Nieuncieuc, "Sw": Jongsung.Nieuncieuc, "SW": Jongsung.Nieuncieuc,
+        "sw": Jongsung.Nieuncieuc, "Sw": Jongsung.Nieuncieuc,
         "sg": Jongsung.Nieunhieuh, "Sg": Jongsung.Nieunhieuh, "SG": Jongsung.Nieunhieuh,
-        "e": Jongsung.Tikeut, "E": Jongsung.Tikeut,
+        "e": Jongsung.Tikeut,
         "f": Jongsung.Rieul, "F": Jongsung.Rieul,
         "fr": Jongsung.Rieulkiyeok, "Fr": Jongsung.Rieulkiyeok, "FR": Jongsung.Rieulkiyeok,
         "fa": Jongsung.Rieulmieum, "Fa": Jongsung.Rieulmieum, "FA": Jongsung.Rieulmieum,
-        "fq": Jongsung.Rieulpieup, "Fq": Jongsung.Rieulpieup, "FQ": Jongsung.Rieulpieup,
+        "fq": Jongsung.Rieulpieup, "Fq": Jongsung.Rieulpieup,
         "ft": Jongsung.Rieulsios, "Ft": Jongsung.Rieulsios, "FT": Jongsung.Rieulsios,
         "fx": Jongsung.Rieulthieuth, "Fx": Jongsung.Rieulthieuth, "FX": Jongsung.Rieulthieuth,
         "fv": Jongsung.Rieulphieuph, "Fv": Jongsung.Rieulphieuph, "FV": Jongsung.Rieulphieuph,
         "fg": Jongsung.Rieulhieuh, "Fg": Jongsung.Rieulhieuh, "FG": Jongsung.Rieulhieuh,
         "a": Jongsung.Mieum, "A": Jongsung.Mieum,
-        "q": Jongsung.Pieup, "Q": Jongsung.Pieup,
-        "qt": Jongsung.Pieupsios, "Qt": Jongsung.Pieupsios, "QT": Jongsung.Pieupsios,
+        "q": Jongsung.Pieup,
+        "qt": Jongsung.Pieupsios,
         "t": Jongsung.Sios,
         "T": Jongsung.Ssangsios, "tt": Jongsung.Ssangsios,
         "d": Jongsung.Ieung, "D": Jongsung.Ieung,
-        "w": Jongsung.Cieuc, "W": Jongsung.Cieuc,
+        "w": Jongsung.Cieuc,
         "c": Jongsung.Chieuch, "C": Jongsung.Chieuch,
         "z": Jongsung.Khieukh, "Z": Jongsung.Khieukh,
         "x": Jongsung.Thieuth, "X": Jongsung.Thieuth,
         "v": Jongsung.Phieuph, "V": Jongsung.Phieuph,
         "g": Jongsung.Hieuh, "G": Jongsung.Hieuh,
     ]
+
+    /// ㅃ, ㅉ, ㄸ 키: 종성으로 올 수 없는 쌍자음
+    static let noJongsungKeys: Set<String> = ["Q", "W", "E"]
 
     /// 연타로 종성 쌍자음을 입력할 수 있는 키
     static let doubleConsonantKeys: Set<String> = ["r", "t"]

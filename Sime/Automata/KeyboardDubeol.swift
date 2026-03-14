@@ -84,6 +84,13 @@ final class KeyboardDubeol: Keyboard {
         guard !comp.jungsung.isEmpty else { return false }
 
         let key = current[i]
+
+        // ㅃ, ㅉ, ㄸ는 종성으로 올 수 없으므로 현재 글자를 완성하고 초성으로 시작
+        if DubeolLayout.noJongsungKeys.contains(key) {
+            comp.done = true
+            return false
+        }
+
         let jongKey = comp.jongsung + key
 
         // doubleConsonant가 false면 종성에서 쌍자음 조합 금지
