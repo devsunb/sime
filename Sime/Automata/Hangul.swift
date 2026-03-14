@@ -88,10 +88,7 @@ final class Hangul {
 
     func flush() {
         guard var automata = automata, let keyboard = keyboard else {
-            // flush는 start() 전에 호출될 수 있으므로 debug 레벨로 기록
-            if self.keyboard == nil {
-                Log.shared.debug("[Automata] flush skipped: keyboard not initialized")
-            }
+            // flush는 start() 전(Sime 미선택 상태)에 호출될 수 있으므로 무시
             return
         }
         guard !automata.current.isEmpty else {
