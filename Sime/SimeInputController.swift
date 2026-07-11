@@ -1,3 +1,4 @@
+import Carbon
 import InputMethodKit
 
 // MARK: - KeyCode Constants
@@ -390,10 +391,20 @@ open class SimeInputController: IMKInputController {
         }
 
         if !preediting.isEmpty || backspace {
+            // plain string을 넘기면 IMKit이 "선택된 절"(kTSMHiliteSelectedConvertedText)
+            // 스타일로 포장하면서 클라이언트에 도착하는 selectedRange를 preedit 전체
+            // (0, length)로 덮어씀. 그러면 Chromium 웹에디터(ProseMirror 등)가 커밋 시
+            // DOM diff를 잘못 앵커해서 커서가 튐. kTSMHiliteRawText 스타일의 attributed
+            // string을 직접 만들어 넘기면 selectionRange가 그대로 전달됨
+            let markedRange = NSRange(location: 0, length: preediting.utf16.count)
+            let marked = NSMutableAttributedString(string: preediting)
+            if let attrs = mark(forStyle: kTSMHiliteRawText, at: markedRange) as? [NSAttributedString.Key: Any] {
+                marked.setAttributes(attrs, range: markedRange)
+            }
             display.setMarkedText(
-                preediting,
-                selectionRange: NSRange(location: 0, length: preediting.count),
-                replacementRange: NSRange(location: NSNotFound, length: NSNotFound)
+                marked,
+                selectionRange: NSRange(location: preediting.utf16.count, length: 0),
+                replacementRange: NSRange(location: NSNotFound, length: 0)
             )
         }
     }
